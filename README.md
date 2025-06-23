@@ -39,15 +39,6 @@ streamlit run app.py
 Open http://localhost:8501 in your browser and start classifying.
 
 
-🧪 Example Usage
-
-Paste multi-FASTA or raw text sequences:
-
-<pre> Paste multi-FASTA or raw text sequences: ``` >peptide1 ALLK >peptide2 ALLKKK ``` </pre>
-
-Click Classify to view and download predictions in CSV format.
-
-
 📬 Contact
 
 For support, contact: Prabhat Tripathi (pmb2022001@iiita.ac.in) System Biology LaboratoryIndian Institute of Information Technology Allahabad
