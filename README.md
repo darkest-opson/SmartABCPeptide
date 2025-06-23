@@ -1,4 +1,4 @@
-SmartABCPeptide
+###SmartABCPeptide
 
 A machine learning-powered web application for the classification of anticancer peptides (ACPs) and non-ACPs from protein/peptide sequences.
 
@@ -17,24 +17,25 @@ Interactive modern web UI using Streamlit
 🚀 Quick Start
 
 1. Clone the Repository
-
+```bash
 git clone https://github.com/yourusername/abcp-classifier.git
 cd SmartABCPeptide/SmartABCPeptide/
-
+```
 2. Install Conda (Miniconda or Anaconda)
 
 Download and install Miniconda:
 https://www.anaconda.com/docs/getting-started/miniconda/main
 
 3. Create and Activate Environment
-
+```bash
 conda env create -f environment.yaml
 conda activate abcp_env
+```
 
 4. Run the App
-
+```bash
 streamlit run app.py
-
+```
 Open http://localhost:8501 in your browser and start classifying.
 
 
@@ -42,15 +43,15 @@ Open http://localhost:8501 in your browser and start classifying.
 
 Paste multi-FASTA or raw text sequences:
 
->Peptide1
-ALLK
->Peptide2
-ALLKK
+>Peptide1\n
+ALLK\n
+>Peptide2\n
+ALLKK\n
 
 Or one sequence per line:
 
-ALLK
-ALLKK
+ALLK\n
+ALLKKK\n
 
 Click Classify to view and download predictions in CSV format.
 
