@@ -44,7 +44,8 @@ Open http://localhost:8501 in your browser and start classifying.
 Paste multi-FASTA or raw text sequences:
 
 <pre> &gt;Peptide1 ALLK 
-&gt;Peptide2 ALLKK </pre>
+&gt; </pre>
+<pre>Peptide2 ALLKK </pre>
 Or one sequence per line:
 
 <pre> ALLK</pre> 
