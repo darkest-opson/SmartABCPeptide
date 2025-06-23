@@ -43,7 +43,7 @@ Open http://localhost:8501 in your browser and start classifying.
 
 Paste multi-FASTA or raw text sequences:
 
-<pre> >peptide1 ALLK >peptide2 ALLKKK </pre>
+<pre> Paste multi-FASTA or raw text sequences: ``` >peptide1 ALLK >peptide2 ALLKKK ``` </pre>
 
 Click Classify to view and download predictions in CSV format.
 
