@@ -1,37 +1,40 @@
-﻿# smartABCPeptide
-###SmartABCPeptide
+# 🧬 SmartABCPeptide
 
-A machine learning-powered web application for the classification of anticancer peptides (ACPs) and non-ACPs from protein/peptide sequences.
+**SmartABCPeptide** is a machine learning–powered web application for the classification of **anticancer peptides (ACPs)** and **non-ACPs** from protein or peptide sequences.  
+The tool offers a fast, reliable, and user-friendly interface for both single and batch peptide classification.
 
-Developed by System Biology LaboratoryIndian Institute of Information Technology Allahabad, Prayagraj, Uttar Pradesh, India.
+---
 
-🎯 Features
+## 📌 About the Project
 
-Single or batch prediction (supports multi-FASTA or one-sequence-per-line input)
+This project is developed at the  
+**System Biology Laboratory**  
+**Indian Institute of Information Technology Allahabad (IIIT-A)**  
+Prayagraj, Uttar Pradesh, India.
 
-Input methods: manual paste or FASTA file upload
+SmartABCPeptide aims to support peptide-based anticancer drug discovery by enabling accurate sequence-level prediction using trained machine learning models.
 
-Downloadable CSV results
+---
 
-Interactive modern web UI using Streamlit
+## 🎯 Features
 
-🚀 Quick Start
+- ✅ Single and batch prediction  
+  - Supports **multi-FASTA** input  
+  - Supports **one-sequence-per-line** input  
+- 🧾 Multiple input methods  
+  - Manual sequence paste  
+  - FASTA file upload  
+- 📥 Downloadable results in **CSV** format  
+- 🖥️ Interactive and modern web interface  
+  - Built using **Streamlit**  
+- ⚡ Fast and easy to use  
 
-Clone the Repository
+---
+
+## 🚀 Quick Start
+
+### 1️⃣ Clone the Repository
+
+```bash
 git clone https://github.com/yourusername/abcp-classifier.git
 cd SmartABCPeptide/SmartABCPeptide/
-Install Conda (Miniconda or Anaconda)
-Download and install Miniconda: https://www.anaconda.com/docs/getting-started/miniconda/main
-
-Create and Activate Environment
-conda env create -f environment.yaml
-conda activate abcp_env
-Run the App
-streamlit run app.py
-Open http://localhost:8501 in your browser and start classifying.
-
-📬 Contact
-
-For support, contact: Prabhat Tripathi (pmb2022001@iiita.ac.in) System Biology LaboratoryIndian Institute of Information Technology Allahabad
-
-Enjoy using ABCP Classifier!
