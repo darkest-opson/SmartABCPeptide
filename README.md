@@ -38,3 +38,21 @@ SmartABCPeptide aims to support peptide-based anticancer drug discovery by enabl
 ```bash
 git clone https://github.com/yourusername/abcp-classifier.git
 cd SmartABCPeptide/SmartABCPeptide/
+
+## 2️⃣ Install Conda
+
+Install **Miniconda** or **Anaconda** if not already installed:
+
+https://www.anaconda.com/docs/getting-started/miniconda/main
+
+---
+
+## 3️⃣ Create and Activate the Environment
+
+```bash
+conda env create -f environment.yaml
+conda activate abcp_env
+
+```bash
+streamlit run app.py
+
