@@ -1,7 +1,6 @@
 # app.py
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 from abcp_classification_function import classify_peptide
 
 # -------------------------------
@@ -9,20 +8,45 @@ from abcp_classification_function import classify_peptide
 # -------------------------------
 st.set_page_config(
     page_title="SmartABCPeptide",
-    layout="centered",
-    page_icon="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9WjEbOoAAAAASUVORK5CYII="
+    layout="centered"
 )
 
 AMINO_ACIDS = list("ACDEFGHIKLMNPQRSTVWY")
 
 # -------------------------------
-# Sidebar navigation
+# Custom CSS (INTERACTIVE UI)
 # -------------------------------
-st.sidebar.title("🧬 SmartABCPeptide")
-page = st.sidebar.radio(
-    "Navigation",
-    ["ABCP Classification", "Peptide Design"]
-)
+st.markdown("""
+<style>
+.main-title {
+    text-align: center;
+    font-size: 42px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.subtitle {
+    text-align: center;
+    font-size: 18px;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+.card {
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.08);
+}
+
+.footer {
+    text-align: center;
+    padding: 15px;
+    font-size: 14px;
+    color: #777;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # ======================================================
 # Helper functions
@@ -51,14 +75,6 @@ def parse_fasta(raw_text):
 
     return records
 
-def mutations_to_fasta(df):
-    fasta_lines = []
-    for _, row in df.iterrows():
-        header = f">{row['Mutation']}"
-        seq = row["Mutated Peptide"]
-        fasta_lines.append(header)
-        fasta_lines.append(seq)
-    return "\n".join(fasta_lines)
 
 def generate_point_mutations(peptide):
     peptide = peptide.upper()
@@ -70,19 +86,11 @@ def generate_point_mutations(peptide):
                 mutated = list(peptide)
                 mutated[i] = aa
                 variants.append({
-                    "Original Peptide": peptide,
                     "Mutated Peptide": "".join(mutated),
                     "Mutation": f"{original_aa}{i+1}{aa}",
                     "Position": i + 1
                 })
     return pd.DataFrame(variants)
-
-
-def amino_acid_composition(peptide):
-    return pd.DataFrame({
-        "Amino Acid": AMINO_ACIDS,
-        "Count": [peptide.count(aa) for aa in AMINO_ACIDS]
-    })
 
 
 def calculate_charge(peptide):
@@ -91,140 +99,178 @@ def calculate_charge(peptide):
     return pos - neg
 
 
-
-
-
+# ======================================================
+# HEADER
+# ======================================================
+st.markdown('<div class="main-title">SmartABCPeptide</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">Anti-Breast Cancer Peptide Classification & Design Platform</div>', unsafe_allow_html=True)
 
 # ======================================================
-# PAGE 1: ABCP CLASSIFICATION (YOUR CODE)
+# SECTION 1: CLASSIFICATION
 # ======================================================
-if page == "ABCP Classification":
+st.markdown('<div class="card">', unsafe_allow_html=True)
 
-    st.title("SmartABCPeptide")
+st.header("ABCP Classification")
 
-    st.markdown(
-        """
-        <div style='background-color: #f0f2f6; border-radius: 10px; padding: 16px; margin-bottom: 16px;color: #333;'>
-        <h4>About this tool</h4>
-        <p>
-        <b>SmartABCPeptide</b> is a machine learning-based web application designed for the classification
-        of anticancer peptides (ACPs) and non-ACPs from protein/peptide sequences.
-        It supports both single and batch prediction in FASTA or plain sequence format.
-        </p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+input_method = st.radio("Input method", ["Manual Input", "Upload FASTA"])
 
-    input_method = st.radio(
-        "Input method:",
-        ["Manual sequence(s)", "Upload FASTA file"]
-    )
+sequence_input = None
 
-    sequence_input = None
+if input_method == "Manual Input":
+    sequence_input = st.text_area("Enter sequence(s)", height=120)
+else:
+    fasta_file = st.file_uploader("Upload FASTA", type=["fa", "fasta"])
+    if fasta_file:
+        sequence_input = fasta_file.getvalue().decode("utf-8")
 
-    if input_method == "Manual sequence(s)":
-        sequence_input = st.text_area(
-            "Paste peptide sequence(s) (FASTA or one-per-line)",
-            height=150
-        )
+if st.button("Run Classification"):
+    if not sequence_input:
+        st.warning("Please provide sequence input")
     else:
-        fasta_file = st.file_uploader("Upload a FASTA file", type=["fa", "fasta"])
-        if fasta_file:
-            sequence_input = fasta_file.getvalue().decode("utf-8")
+        with st.spinner("Analyzing peptides..."):
+            records = parse_fasta(sequence_input)
+            results = []
 
-    if st.button("Classify"):
-        if not sequence_input or not sequence_input.strip():
-            st.warning("Please provide at least one peptide sequence.")
-        else:
-            try:
-                records = parse_fasta(sequence_input)
-                results = []
+            for seq_id, seq in records:
+                pred_class, prob = classify_peptide(f">{seq_id}\n{seq}")
 
-                for seq_id, seq in records:
-                    pred_class, pred_prob = classify_peptide(f">{seq_id}\n{seq}")
-                    results.append({
-                        "Identifier": seq_id,
-                        "Sequence": seq,
-                        "Predicted Class": pred_class,
-                        "Predicted Probability": f"{pred_prob:.4f}"
-                    })
+                results.append({
+                    "ID": seq_id,
+                    "Sequence": seq,
+                    "Class": pred_class,
+                    "Probability": round(prob, 4),
+                    "Charge": calculate_charge(seq),
+                    "Length": len(seq)
+                })
 
-                df = pd.DataFrame(results)
-                st.success("Classification results")
-                st.dataframe(df)
+            df = pd.DataFrame(results)
 
-                csv = df.to_csv(index=False)
-                st.download_button(
-                    "Download results as CSV",
-                    csv,
-                    "abcp_classification_results.csv",
-                    "text/csv"
-                )
-
-            except Exception as e:
-                st.error(f"Error during classification:\n{e}")
-
-# ======================================================
-# PAGE 2: PEPTIDE DESIGN
-# ======================================================
-elif page == "Peptide Design":
-
-    st.title("🔁 Peptide Design – Point Mutation Library")
-
-    peptide = st.text_input(
-        "Enter peptide sequence",
-        placeholder="ACDEFGHIK"
-    )
-
-    if peptide:
-        peptide = peptide.upper()
-        invalid = [aa for aa in peptide if aa not in AMINO_ACIDS]
-
-        if invalid:
-            st.error(f"Invalid amino acids found: {set(invalid)}")
-        else:
-            df = generate_point_mutations(peptide)
-
-            st.success(
-                f"Generated {len(df)} variants "
-                f"({len(peptide)} positions × 19 mutations)"
-            )
-
+            st.success("Classification Complete")
             st.dataframe(df, use_container_width=True)
 
-            col1, col2 = st.columns(2)
+            st.download_button(
+                "⬇ Download CSV",
+                df.to_csv(index=False),
+                "classification_results.csv"
+            )
 
-            with col1:
-                st.download_button(
-                    "Download mutation library (CSV)",
-                    df.to_csv(index=False),
-                    "point_mutation_library.csv",
-                    "text/csv"
-                )
+st.markdown('</div>', unsafe_allow_html=True)
 
-            with col2:
-                fasta_data = mutations_to_fasta(df)
-                st.download_button(
-                    "Download mutation library (FASTA)",
-                    fasta_data,
-                    "point_mutation_library.fasta",
-                    "text/plain"
-                )
+# ======================================================
+# SECTION 2: PEPTIDE DESIGN + PREDICTION
+# ======================================================
+st.markdown('<div class="card">', unsafe_allow_html=True)
+
+st.header("Peptide Design + Prediction")
+
+peptide = st.text_input("Enter peptide sequence")
+
+top_n = st.slider("Select number of top peptides", 5, 50, 10)
+
+if peptide:
+    peptide = peptide.upper()
+
+    invalid = [aa for aa in peptide if aa not in AMINO_ACIDS]
+
+    if invalid:
+        st.error(f"Invalid amino acids: {set(invalid)}")
+    else:
+        st.info(f"Total mutations to evaluate: {len(peptide) * 19}")
+
+        if st.button("Generate & Predict"):
+
+            with st.spinner("Generating mutations and predicting..."):
+
+                df_mut = generate_point_mutations(peptide)
+                predictions = []
+
+                for _, row in df_mut.iterrows():
+                    seq = row["Mutated Peptide"]
+
+                    pred_class, prob = classify_peptide(f">mut\n{seq}")
+
+                    predictions.append({
+                        "Mutation": row["Mutation"],
+                        "Sequence": seq,
+                        "Position": row["Position"],
+                        "Class": pred_class,
+                        "Probability": round(float(prob), 4),
+                        "Charge": calculate_charge(seq)
+                    })
+
+                df_pred = pd.DataFrame(predictions)
+
+                # Sort by best candidates
+                df_pred = df_pred.sort_values(by="Probability", ascending=False)
+
+                st.success("Mutation + Prediction Completed")
+
+                # 🔥 TOP CANDIDATES
+                st.subheader(f" Top {top_n} Peptides")
+                st.dataframe(df_pred.head(top_n), use_container_width=True)
+
+                # 📊 FULL DATA
+                with st.expander("View All Mutations"):
+                    st.dataframe(df_pred, use_container_width=True)
 
 
+                # ⬇ DOWNLOADS
+                col1, col2 = st.columns(2)
 
+                with col1:
+                    st.download_button(
+                        "⬇ Download Top Peptides",
+                        df_pred.head(top_n).to_csv(index=False),
+                        "top_peptides.csv"
+                    )
 
-# -------------------------------
-# Footer
-# -------------------------------
-st.markdown(
-    """
-    <hr>
-    <div style='text-align: center; font-size: 15px; color: #666; margin-top: 30px;'>
-    Developed by <b>System Biology Laboratory</b><br>
-    <b>Indian Institute of Information Technology Allahabad</b>, Prayagraj, India
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+                with col2:
+                    st.download_button(
+                        "⬇ Download All Results",
+                        df_pred.to_csv(index=False),
+                        "all_mutations_predictions.csv"
+                    )
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# ======================================================
+# SECTION 3: ABOUT
+# ======================================================
+st.markdown('<div class="card">', unsafe_allow_html=True)
+
+# st.header("About")
+
+st.markdown("""
+<div style='text-align: center;'>
+
+<h3>Developers</h3>
+<p>
+Prabhat Tripathi, Sana Tarannum, Devesh Somvanshi, Sankalp Patil,<br>
+Srishti Chakraborty, Ankish Arya, Pritish Varadwaj, Nirmalya Sen
+</p>
+
+<h3>Institutions</h3>
+<p>
+Indian Institute of Information Technology Allahabad (IIIT-A), Prayagraj<br>
+Bose Institute, Kolkata
+</p>
+
+<h3>Citation</h3>
+<p>
+Tripathi et al. (2026). SmartABCPeptide: ML-based ACP prediction tool.
+</p>
+
+</div>
+""", unsafe_allow_html=True)
+
+# ======================================================
+# FOOTER (PROFESSIONAL)
+# ======================================================
+st.markdown("""
+<hr>
+<div class="footer">
+Developed by <b>System Biology Laboratory</b><br>
+Indian Institute of Information Technology Allahabad<br><br>
+© 2026 SmartABCPeptide | All Rights Reserved
+</div>
+""", unsafe_allow_html=True)
